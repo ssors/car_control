@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="ackermann_car" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- 是否加载 Gazebo 插件（在纯 RViz 可视化时可设为 false，避免报缺少插件的警告） -->
+  <xacro:arg name="use_gazebo" default="true"/>
+  <!-- 是否加载阿克曼驱动插件。排查"轮子位置异常"问题时可设为 false，
+       先确认没有驱动插件、纯被动物理下轮子是否稳定，用于排除法定位问题。 -->
+  <xacro:arg name="use_ackermann_plugin" default="true"/>
+
+  <xacro:include filename="$(find car_description)/urdf/common_properties.xacro"/>
+  <xacro:include filename="$(find car_description)/urdf/materials.xacro"/>
+  <xacro:include filename="$(find car_description)/urdf/inertial_macros.xacro"/>
+  <xacro:include filename="$(find car_description)/urdf/base.xacro"/>
+  <xacro:include filename="$(find car_description)/urdf/wheel.xacro"/>
+  <xacro:include filename="$(find car_description)/urdf/lidar.xacro"/>
+  <xacro:include filename="$(find car_description)/urdf/camera.xacro"/>
+
+  
+  <xacro:include filename="$(find car_description)/urdf/car.gazebo.xacro"/>
+  
+
+</robot>

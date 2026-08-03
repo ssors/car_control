@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================================
+       N10 型号雷达：Φ52 × 36.1mm，80g
+       安装位置：上层底盘前1/4处，左右居中
+       ============================================================ -->
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="chassis_link"/>
+    <child link="lidar_link"/>
+    <!-- 坐在上层底盘上表面：z = 上层板厚/2 + 雷达自身高度的一半 -->
+    <origin xyz="${lidar_x} ${lidar_y} ${chassis_depth/2 + lidar_height/2}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="lidar_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+      </geometry>
+      <material name="lidar_dark"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder_z mass="${lidar_mass}" radius="${lidar_radius}" length="${lidar_height}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder_z>
+  </link>
+
+  <!-- ================ Gazebo: 2D 激光雷达传感器插件 ================
+       N10 为单线360°扫描雷达，此处参数为常见2D激光雷达典型值【假设值】，
+       请根据 N10 实际规格书（测距范围/角分辨率/频率）调整。 -->
+  <gazebo reference="lidar_link">
+    <material>Gazebo/FlatBlack</material>
+    <sensor name="lidar_sensor" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <!-- 默认关掉射线可视化：那一大片扇形蓝线会严重遮挡视野，
+           让车身/车轮看起来像挤在一起。想看雷达扫描效果时改回 true 即可。 -->
+      <visualize>true</visualize>
+      <update_rate>15</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.12</min>
+          <max>8.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="lidar_controller" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/out:=scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>lidar_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="PI" value="3.1415926535897931"/>
+
+  <!-- ================ 底盘（上下两层）几何参数 ================ -->
+  <xacro:property name="chassis_length"      value="0.220"/>   <!-- 车长 220mm -->
+  <xacro:property name="chassis_width"       value="0.150"/>   <!-- 车宽 150mm，-->
+  <xacro:property name="ground_clearance"    value="0.020"/>   <!-- 下层底盘离地 20mm -->
+  <xacro:property name="chassis_depth"       value="0.053"/>   <!-- 底盘高5.3厘米 -->
+
+  <!-- ================ 轮子参数 ================ -->
+  <xacro:property name="wheel_radius"        value="0.0325"/>  <!-- 直径65mm -->
+  <xacro:property name="wheel_width"         value="0.025"/>   <!-- 宽度25mm -->
+  <xacro:property name="front_overhang"      value="0.020"/>   <!-- 前轮距车头20mm -->
+  
+  <xacro:property name="wheel_y_offset"      value="0.095"/>  <!-- 【假设值】左右轮中心到车体中轴线距离，-->
+ 
+  <!--转向节（连接轴和车轮的虚拟件，用于前轮转向） -->
+
+  <xacro:property name="steer_link_radius"   value="0.006"/>   <!-- 虚拟转向节尺寸，仅用于可视化【假设值】 -->
+  <xacro:property name="steer_link_length"   value="0.010"/>
+  <!-- 转向节质量不能给太小：太轻的连杆夹在重得多的车轮和底盘之间 -->
+
+  <xacro:property name="mass_steer_link"     value="0.03"/>
+
+  <!-- ================ 支撑杆 ================ -->
+  <xacro:property name="pole_height"        value="0.200"/>   <!-- 支撑杆长度 200mm -->
+  <xacro:property name="pole_radius"        value="0.004"/>   <!-- 杆子半径，细杆 -->
+  <xacro:property name="mass_pole"          value="0.020"/>   <!-- 撑杆质量 -->
+
+  <!-- ================ 摄像头安装臂参数（新：摄像头直接固定在底盘上，与杆子分离） ================ -->
+
+  <xacro:property name="camera_mount_length" value="0.035"/>  <!-- 安装臂长度，从底盘前沿向前伸出35mm -->
+  <xacro:property name="camera_mount_size"   value="0.010"/>  <!-- 安装臂方形截面 10×10mm -->
+  <xacro:property name="mass_camera_mount"   value="0.120"/>  <!-- 安装臂质量 -->
+
+  <!-- 转接头（连接装置）参数 -->
+  <xacro:property name="adapter_size" value="0.025"/>   <!-- 25mm 方块 -->
+  <xacro:property name="adapter_mass" value="0.010"/>   <!-- 10g -->
+  <!-- ================ USB免驱摄像头本体参数 ================ -->
+  <!-- 底座38x38mm方形，镜头筒Φ14mm×22mm -->
+  <xacro:property name="camera_base_size"   value="0.038"/>   <!-- 底座 38×38mm -->
+  <xacro:property name="camera_base_th"     value="0.005"/>   <!-- 底座厚度 -->
+  <xacro:property name="camera_radius"      value="0.007"/>   <!-- 镜头筒直径14mm -->
+  <xacro:property name="camera_length"      value="0.022"/>   <!-- 镜头筒长度22mm，沿光轴(前)方向 -->
+
+  <xacro:property name="camera_base_tilt"     value="${PI/2}"/>
+  <xacro:property name="camera_extra_downtilt" value="0.2618"/>  <!-- 约8° -->
+  <xacro:property name="camera_tilt_angle"    value="${camera_base_tilt + camera_extra_downtilt}"/>
+
+
+  <xacro:property name="mass_camera_base"   value="0.020"/>   <!-- 【假设值】摄像头底座质量 -->
+  <xacro:property name="mass_camera"        value="0.050"/>   <!-- 【假设值】摄像头本体质量 -->
+
+  <!-- 前轴 / 后轴相对底盘中心(x=0)的位置 -->
+  <xacro:property name="front_axle_x" value="${chassis_length/2 - front_overhang}"/>   <!-- = 0.09 -->
+  <xacro:property name="rear_axle_x"  value="${-chassis_length/2}"/>                    <!-- = -0.11，后轮与车尾平齐 -->
+  <xacro:property name="wheelbase"    value="${front_axle_x - rear_axle_x}"/>           <!-- = 0.20 -->
+
+  <!-- ================ N10 雷达参数 ================ -->
+  <xacro:property name="lidar_radius" value="0.026"/>   <!-- Φ52mm -->
+  <xacro:property name="lidar_height" value="0.0361"/>  <!-- 36.1mm -->
+  <xacro:property name="lidar_mass"   value="0.080"/>   <!-- 80g -->
+  <!-- 雷达安装在上层前四分之一处，正中间 -->
+  <xacro:property name="lidar_x" value="${chassis_length/2 - chassis_length/4}"/>  <!-- 距前边缘 1/4 车长 = 0.055 -->
+  <xacro:property name="lidar_y" value="0.0"/>
+
+  <!-- ================ 质量分配（总质量 2.14kg） ================ -->
+  <xacro:property name="mass_total"          value="2.14"/>
+  <xacro:property name="mass_wheel_front"    value="0.15"/>    <!-- 前轮单个质量 150g -->
+  <xacro:property name="mass_wheel_rear"     value="0.10"/>    <!-- 后轮单个质量 100g -->
+  <xacro:property name="mass_chassis"        value="1.280"/>   <!-- 【假设值】下层底盘（含电机/电池等） -->
+  
+  <!-- ================ 转向 / 摩擦 / 阻尼参数 ================ -->
+  <xacro:property name="max_steer_angle"       value="0.5236"/>   <!-- 约30°最大转向角 -->
+  <xacro:property name="steer_effort"          value="10.0"/>     <!-- 转向力矩，改正值 -->
+  <xacro:property name="steer_velocity"        value="10.0"/>     <!-- 转向速度，改正值 -->
+  <xacro:property name="wheel_effort"          value="10.0"/>     <!-- 驱动轮力矩，加大 -->
+  <xacro:property name="wheel_velocity"        value="-1.0"/>     <!-- 滚动不限速 -->
+  <xacro:property name="wheel_joint_damping"   value="0.01"/>     <!-- 关节阻尼，降低防卡 -->
+  <xacro:property name="wheel_joint_friction"  value="0.01"/>     <!-- 关节摩擦，降低防卡 -->
+  <xacro:property name="steer_joint_damping"   value="0.20"/>
+  <xacro:property name="steer_joint_friction"  value="0.05"/> 
+
+  <!-- 轮胎与地面摩擦系数（Gazebo ODE 参数），橡胶轮胎典型值 -->
+  <xacro:property name="wheel_mu1"        value="5.0"/>     <!-- 纵向摩擦，加大防打滑 -->
+  <xacro:property name="wheel_mu2"        value="0.5"/>     <!-- 侧向摩擦，降低防前轮卡死 -->
+  <xacro:property name="wheel_kp"         value="1e5"/>
+  <xacro:property name="wheel_kd"         value="10.0"/>
+  <xacro:property name="wheel_max_vel"    value="10.0"/>     <!-- 允许滑移速度，加大 -->
+  <xacro:property name="wheel_min_depth"  value="0.001"/>
+
+</robot>

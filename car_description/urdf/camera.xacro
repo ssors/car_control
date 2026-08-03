@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================================
+       摄像头整体倾斜安装
+       结构：杆子 → 转接头 → 底座+摄像头组合体（整体倾斜15°）
+       摄像头始终垂直于底座，两者作为一个刚体整体倾斜
+       ============================================================ -->
+
+  <!-- ================ 支撑杆 ================ -->
+  <joint name="pole_joint" type="fixed">
+    <parent link="chassis_link"/>
+    <child link="pole_link"/>
+    <origin xyz="0 0 ${chassis_depth/2 + pole_height/2}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="pole_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${pole_radius}" length="${pole_height}"/>
+      </geometry>
+      <material name="pole_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${pole_radius}" length="${pole_height}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder_z mass="${mass_pole}" radius="${pole_radius}" length="${pole_height}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder_z>
+  </link>
+
+  <!-- ================ 转接头（连接装置） ================ -->
+  <joint name="adapter_joint" type="fixed">
+    <parent link="pole_link"/>
+    <child link="camera_adapter_link"/>
+    <origin xyz="0.01 0 ${pole_height/2}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="camera_adapter_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.025 0.025"/>
+      </geometry>
+      <material name="pole_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_box mass="0.005" x="0.025" y="0.025" z="0.025">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_box>
+  </link>
+
+  <!-- ================ 摄像头底座：整体倾斜 15° ================
+       关键：这里的 rpy 设置的就是整体的倾斜角度
+       底座本身保持水平安装姿态（没有额外旋转），
+       但整个关节被旋转了 15°，所以底座跟随倾斜 -->
+  <joint name="camera_base_joint" type="fixed">
+    <parent link="camera_adapter_link"/>
+    <child link="camera_base_link"/>
+    <!-- 从转接头向前伸出，并整体倾斜 15°（绕 Y 轴旋转） -->
+    <origin xyz="0.015 0 0" rpy="0 ${camera_tilt_angle} 0"/>
+  </joint>
+
+  <link name="camera_base_link">
+    <visual>
+      <!-- 底座自身的几何是水平的，没有额外旋转 -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_base_size} ${camera_base_size} ${camera_base_th}"/>
+      </geometry>
+      <material name="pole_silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_base_size} ${camera_base_size} ${camera_base_th}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_box mass="${mass_camera_base}" x="${camera_base_size}" y="${camera_base_size}" z="${camera_base_th}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_box>
+  </link>
+
+  <!-- ================ 摄像头本体：垂直于底座安装 ================
+       关键：rpy="0 0 0"，没有任何旋转！
+       摄像头相对于底座是垂直的（local Z 朝上），
+       但因为底座本身已经倾斜了 15°，摄像头也跟着倾斜了 -->
+  <joint name="camera_joint" type="fixed">
+    <parent link="camera_base_link"/>
+    <child link="camera_link"/>
+    <!-- 垂直立在底座上，没有任何旋转 -->
+    <origin xyz="0 0 ${camera_base_th/2 + camera_length/2}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <!-- 圆柱体沿 local Z 方向，竖直向上 -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${camera_radius}" length="${camera_length}"/>
+      </geometry>
+      <material name="camera_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${camera_radius}" length="${camera_length}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder_z mass="${mass_camera}" radius="${camera_radius}" length="${camera_length}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder_z>
+  </link>
+
+  <!-- ================ 光学坐标系 ================
+       光轴方向：由于整体倾斜，光轴从朝前变成了朝前下方 15° -->
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_link_optical"/>
+    <!-- 光学中心在镜头前端 -->
+    <origin xyz="0 0 ${camera_length}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="camera_link_optical"/>
+
+  <!-- ================ Gazebo 传感器插件 ================ -->
+  <gazebo reference="camera_link">
+    <material>Gazebo/FlatBlack</material>
+    <sensor name="camera_sensor" type="camera">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.089</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>50</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/</namespace>
+        </ros>
+        <camera_name>camera</camera_name>
+        <frame_name>camera_link_optical</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

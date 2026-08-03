@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================================
+       base_footprint : 地面投影坐标系（z=0，位于地面）。
+       base_link      : 
+       chassis_link   :  底盘几何中心
+       ============================================================ -->
+
+ <link name="base_footprint"/>
+            
+    <link name="base_link">
+    </link>
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint" />
+        <child link="base_link" />
+        <origin xyz="0.0575 0.0 0.0" rpy="0 0 0" />
+    </joint>
+
+    <link name="chassis_link">
+        <inertial>
+            <origin xyz="-0.025 0 -0.0076" rpy="0 0 0" />
+            <mass value="${mass_chassis}" />
+            <inertia ixx="${mass_chassis/12 * (chassis_width*chassis_width + chassis_depth*chassis_depth)}"
+                ixy="0" ixz="0"
+                iyy="${mass_chassis/12 * (chassis_length*chassis_length + chassis_depth*chassis_depth)}" iyz="0"
+                izz="${mass_chassis/12 * (chassis_width*chassis_width + chassis_length*chassis_length)}" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_depth}" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_depth}" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="chassis_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="chassis_link" />
+        <origin xyz="0 0 ${ground_clearance + chassis_depth/2}" rpy="0 0 0" />
+    </joint>
+
+
+</robot>  
