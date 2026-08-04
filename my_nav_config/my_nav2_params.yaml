@@ -150,7 +150,7 @@ controller_server:
       max_lookahead_dist: 0.8
       transform_tolerance: 0.2
       use_regulated_linear_velocity_scaling: true
-      regulated_linear_scaling_min_speed: 0.30
+      regulated_linear_scaling_min_speed: 0.40
       regulated_linear_scaling_min_radius: 0.9
       min_approach_velocity: 0.05
       max_angular_vel: 1.2
@@ -191,8 +191,8 @@ local_costmap:
         #   filter_info_topic: "/keepout_filter_info"
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.5
-        inflation_radius: 0.28
+        cost_scaling_factor: 5.0
+        inflation_radius: 0.25
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -228,7 +228,7 @@ global_costmap:
       use_sim_time: True
       # 假设总长 0.22m，后轴距离车尾 0.04m，距离车头 0.18m，宽 0.195m
       footprint: "[[0.1675, 0.0975], [0.1675, -0.0975], [-0.0525, -0.0975], [-0.0525, 0.0975]]"
-      track_unknown_space: true
+      track_unknown_space: false
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       # filters: ["keepout_filter"]
       # keepout_filter:
@@ -254,8 +254,8 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.5
-        inflation_radius: 0.28
+        cost_scaling_factor: 5.0
+        inflation_radius: 0.25
       always_send_full_costmap: True
 
 map_saver:
@@ -274,10 +274,10 @@ planner_server:
     GridBased:
       plugin: "nav2_smac_planner/SmacPlannerHybrid"
       downsample_costmap: false
-      reverse_penalty: 2.0       # 倒车惩罚：越大越倾向于前进（建议 2.0 ~ 3.0）
+      reverse_penalty: 2.5     # 倒车惩罚：越大越倾向于前进（建议 2.0 ~ 3.0）
       change_penalty: 3.0       # 切换方向（前/后）惩罚：防止反复揉车
       non_straight_penalty: 1.0  # 转弯惩罚：略微偏向走直线
-      cost_penalty: 1.5       # 避障/高代价区域惩罚
+      cost_penalty: 2.0     # 避障/高代价区域惩罚
       tolerance: 0.3
       use_astar: false
       allow_unknown: true
