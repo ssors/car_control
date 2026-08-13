@@ -7,14 +7,17 @@
        chassis_link   :  底盘几何中心
        ============================================================ -->
 
- <link name="base_footprint"/>
+ <link name="base_footprint">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+    </link>
+
             
     <link name="base_link">
     </link>
     <joint name="base_joint" type="fixed">
         <parent link="base_footprint" />
         <child link="base_link" />
-        <origin xyz="0.0575 0.0 0.0" rpy="0 0 0" />
+        <origin xyz="0.0775 0.0 0.0" rpy="0 0 0" />
     </joint>
 
     <link name="chassis_link">

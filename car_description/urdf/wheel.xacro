@@ -1,30 +1,12 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="shturl.cc/ALHqZQqzXh7XlT8R4Nh">
 
   <!-- ============================================================
        车轮宏（改进版v2）：四个轮子分别用独立连接件接到底盘
-
-       结构：base_link → xxx_connector_link (新，每个轮子一根，fixed)
-                       → steer_link (仅前轮，revolute绕Z) → wheel_link (continuous绕Y)
-                       → wheel_link (仅后轮，continuous绕Y)
-
-       相比上一版的改动：
-       - 原来前/后各一根"轴"贯穿车体、装在车体正中间(y=0)，靠轮子关节的y偏移量
-         把左右轮甩到两边；而且这根轴的圆柱可视化方向画反了(沿X/前后方向)。
-       - 现在改成每个轮子自己有一根短连接件，直接装在这个轮子自己的(x,y)坐标上，
-         方向沿Y轴（跟轮子转动轴一致，即"轴承插进轮毂"的方向），
-         四个轮子各自独立连到 base_link，不再共享一根轴。
-       - 连接件的 joint 都是 fixed、且不带 collision（只有 visual+惯量），
-         跟原来轴的做法一致，所以不会给 Gazebo 物理引擎增加新的接触面，
-         轮子真正的转向(revolute, axis 0 0 1)和滚动(continuous, axis 0 1 0)
-         关节的父子链路、轴线、限位都完全没变，仿真运动不受影响。
-
-       阿克曼转向：前两轮 = 连接件 → 转向节(steer_link, 绕Z转) + 车轮(绕Y转)
-                  后两轮 = 连接件 → 车轮(绕Y转)，固定不转向。
-       side = "left" / "right"，用于 y 方向及命名。
+       固定轮距y=0.0775，车轮内侧距离底盘侧面严格1cm
        ============================================================ -->
 
-  
+
   <!-- ================ 前左轮 ================ -->
   <link name="steer_left_link">
         <inertial>
@@ -38,7 +20,7 @@
         </inertial>
     </link>
     <joint name="steer_left_joint" type="revolute">
-        <origin xyz="0.0575 0.095 -0.014" rpy="0 0 0" />
+        <origin xyz="0.0575 0.0775 -0.014" rpy="0 0 0" />
         <parent link="chassis_link" />
         <child link="steer_left_link" />
         <axis xyz="0 0 1" />
@@ -94,7 +76,7 @@
         </inertial>
     </link>
     <joint name="steer_right_joint" type="revolute">
-        <origin xyz="0.0575 -0.095 -0.014" rpy="0 0 0" />
+        <origin xyz="0.0575 -0.0775 -0.014" rpy="0 0 0" />
         <parent link="chassis_link" />
         <child link="steer_right_link" />
         <axis xyz="0 0 1" />
@@ -165,7 +147,7 @@
         </collision>
     </link>
     <joint name="rear_left_wheel_joint" type="continuous">
-        <origin xyz="-0.0575 0.095 -0.014" rpy="1.5708 0 0" />
+        <origin xyz="-0.0775 0.0775 -0.014" rpy="1.5708 0 0" />
         <parent link="chassis_link" />
         <child link="rear_left_wheel_link" />
         <axis xyz="0 0 -1" />
@@ -201,7 +183,7 @@
         </collision>
     </link>
     <joint name="rear_right_wheel_joint" type="continuous">
-        <origin xyz="-0.0575 -0.095 -0.014" rpy="-1.5708 0 0" />
+        <origin xyz="-0.0775 -0.0775 -0.014" rpy="-1.5708 0 0" />
         <parent link="chassis_link" />
         <child link="rear_right_wheel_link" />
         <axis xyz="0 0 1" />

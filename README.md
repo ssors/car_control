@@ -6,13 +6,14 @@
 
 ---
 
-## 📁 目录结构说明
+## 目录结构说明
 
 ```text
 src/
 ├── car_control/        # 机器人底层运动控制与建图 Launch 脚本
-│   ├── car_control/    # 节点源码 (控制脚本、雷达检查、自动探索辅助等)
-│   ├── launch/         # 启动文件 (建图 mapping.launch.py 等)
+│   ├── car_control/    # 节点源码 (雷达检查、全屋巡检、路径规划、地图分割房间、键盘控制、车辆停止和测试代码)
+│   ├── coverage_out/   # 分房间和路径规划输出  
+│   ├── launch/         # 启动文件 (建图和导航)
 │   ├── resource/       # 资源文件
 │   └── test/           # 自动化代码测试脚本
 ├── car_description/    # 机器人 URDF/Xacro 3D 模型与 Gazebo 仿真环境定义
@@ -23,20 +24,22 @@ src/
 ├── m-explore-ros2/     # ROS 2 自主边界探索算法库 (Frontier Exploration)
 │   ├── explore/        # 自主探索主功能包
 │   └── explore_lite_msgs/ # 自主探索自定义消息接口
-├── maps/               # 保存的建图成果 (.pgm/.yaml) 与禁行区掩码 (keepout mask)
+├── ros2_maps/          # 建图保存文件（room_latest是最新）
 └── my_nav_config/      # Nav2 导航与 SLAM建图参数配置文件 (*.yaml / *.xml)
+
 
 ```
 
 ---
 
-## 🚀 主要功能包介绍
+## 主要功能包介绍
 
-### 1. `car_control` (控制与建图)
+### 1. `car_control` (控制、建图和导航)
 
-* **功能**：提供小车平滑遥控（`smooth_teleop.py`）、紧急制动（`stop_car.py`）、雷达状态检测（`check_lidar.py`）以及一键启动 SLAM 建图的 Launch 脚本。
+* **功能**：提供小车平滑遥控（`smooth_teleop.py`）、紧急制动（`stop_car.py`）、雷达状态检测（`check_lidar.py`）、全屋巡检路径规划（`coverage_navigator.py`、`coverage_path_generator.py`、`manual_room_segment.py`）以及一键启动 SLAM 建图和导航视角的 Launch 脚本。
 * **主要文件**：
 * `launch/mapping.launch.py`: 结合雷达与 SLAM 的建图启动文件。
+* `launch/navigation.launch.py`: 包括可视化rviz和gazebo的导航启动文件。
 
 
 
@@ -52,15 +55,22 @@ src/
 
 * **功能**：针对该小车量身定制的 Nav2 导航参数与行为树配置文件。
 * **主要文件**：
-* `my_nav2_params.yaml`: Nav2 代价地图与路径规划器参数。
-* `keepout_params.yaml`: 禁行区掩码配置。
+* `my_nav2_params.yaml`: Nav2 代价地图与路径规划器参数。（导航建图用）
+* `my_navigation_to_pose.yaml`: bt行为树参数。（导航建图用）
+* `raw_nav2_params.yaml`: Nav2 代价地图与路径规划器参数。（导航巡检用）
+* `raw_nav2_to_pose.yaml`: bt行为树参数。（导航巡检用）
 * `my_slam_params.yaml`: SLAM 建图参数。
 
 
 
-### 5. `maps` (地图资源)
+### 5. `ros2_maps` (地图资源)
 
-* 存放建图完成的静态地图文件（`map_v1.pgm/.yaml`）以及对应的代价地图掩码（`keepout_mask.pgm/.yaml`）。
+* 存放建图完成的静态地图文件以及对应的代价地图掩码。
+
+### 6. `coverage_output`（全屋覆盖路线可视化）
+
+* `manual_room_split.png` : 地图分房间预览图
+* `coverage_preview.png`  : 路线规划预览图
 
 ---
 
@@ -74,7 +84,17 @@ src/
 sudo apt update
 sudo apt install ros-${ROS_DISTRO}-nav2-bringup \
                  ros-${ROS_DISTRO}-navigation2 \
-                 ros-${ROS_DISTRO}-slam-toolbox
+                 ros-${ROS_DISTRO}-slam-toolbox \
+                 ros-${ROS_DISTRO}-gazebo-ros-pkgs \
+                 ros-${ROS_DISTRO}-gazebo-ros2-control \
+                 ros-${ROS_DISTRO}-xacro \
+                 ros-${ROS_DISTRO}-robot-state-publisher \
+                 ros-${ROS_DISTRO}-joint-state-publisher \
+                 ros-${ROS_DISTRO}-joint-state-publisher-gui \
+                 ros-${ROS_DISTRO}-rviz2
+
+pip install opencv-python numpy scipy matplotlib pyyaml --break-system-packages
+
 
 ```
 
@@ -84,8 +104,7 @@ sudo apt install ros-${ROS_DISTRO}-nav2-bringup \
 
 ```bash
 cd ~/ros2/ros2_ws
-rosdep install -i --from-paths src --rosdistro ${ROS_DISTRO} -y
-colcon build --symlink-install
+colcon build 
 source install/setup.bash
 
 ```
@@ -97,14 +116,23 @@ source install/setup.bash
 ### 1. 启动建图 (SLAM)(直接启动这一个就可以，设置的是gazebo无图模式，只显示rviz2)
 
 ```bash
-ros2 launch car_control mapping.launch.py 
+ros2 launch car_control mapping.launch
 
 ```
+### 2. 启动全屋巡检 (设置的是gazebo无图模式，只显示rviz2)
 
-
+```bash
+ros2 launch car_control navigation.launch 
+ros2 run car_control coverage_navigator 
 
 ```
+### 3.启动全屋巡检前准备（分房间、路径规划）
+```bash
+ros2 run car_control manual_room_segment
+ros2 run car_control coverage_path_generator
 
+```
+#### 提醒：使用完manual_room_segment后手动关闭图形窗口，不要用Ctrl+C退出，不然不会更新保存。
 ---
 
 ## 📝 License

@@ -5,7 +5,7 @@
 
   <!-- ================ 底盘（上下两层）几何参数 ================ -->
   <xacro:property name="chassis_length"      value="0.220"/>   <!-- 车长 220mm -->
-  <xacro:property name="chassis_width"       value="0.150"/>   <!-- 车宽 150mm，-->
+  <xacro:property name="chassis_width"       value="0.110"/>   <!-- 车宽 110mm，-->
   <xacro:property name="ground_clearance"    value="0.020"/>   <!-- 下层底盘离地 20mm -->
   <xacro:property name="chassis_depth"       value="0.053"/>   <!-- 底盘高5.3厘米 -->
 
@@ -14,7 +14,7 @@
   <xacro:property name="wheel_width"         value="0.025"/>   <!-- 宽度25mm -->
   <xacro:property name="front_overhang"      value="0.020"/>   <!-- 前轮距车头20mm -->
   
-  <xacro:property name="wheel_y_offset"      value="0.095"/>  <!-- 【假设值】左右轮中心到车体中轴线距离，-->
+  <xacro:property name="wheel_y_offset"      value="0.0775"/>  <!-- 【假设值】左右轮中心到车体中轴线距离，-->
  
   <!--转向节（连接轴和车轮的虚拟件，用于前轮转向） -->
 

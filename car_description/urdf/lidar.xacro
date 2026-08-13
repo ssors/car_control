@@ -41,7 +41,7 @@
       <pose>0 0 0 0 0 0</pose>
       <!-- 默认关掉射线可视化：那一大片扇形蓝线会严重遮挡视野，
            让车身/车轮看起来像挤在一起。想看雷达扫描效果时改回 true 即可。 -->
-      <visualize>true</visualize>
+      <visualize>false</visualize>
       <update_rate>8</update_rate>
       <ray>
         <scan>

@@ -30,9 +30,17 @@ setup(
             'smooth_teleop = car_control.smooth_teleop:main',
             'auto_explorer = car_control.auto_explorer:main',
             'check_lidar = car_control.check_lidar:main',
+            'cruise_node = car_control.cruise_node:main',
+            
             
             'stop_car = car_control.stop_car:main',
-            'odom_monitor = car_control.odom_monitor:main',
+            'coverage_planner = car_control.coverage_planner:main',
+            'coverage_path_generator = car_control.coverage_path_generator:main',
+            'coverage_navigator = car_control.coverage_navigator:main',
+            # 'door_margin_scan = car_control.door_margin_scan:main',
+            'manual_room_segment = car_control.manual_room_segment:main',
+            'unstuck_helper = car_control.unstuck_helper:main',
+            
         ],
     },
 )
