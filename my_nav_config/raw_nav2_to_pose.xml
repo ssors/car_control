@@ -23,7 +23,7 @@
         <Sequence name="GlobalRecoverySequence">
           <ClearEntireCostmap name="ClearLocalCostmap-subnode" service_name="local_costmap/clear_entirely_local_costmap"/>
           <ClearEntireCostmap name="ClearGlobalCostmap-subnode" service_name="global_costmap/clear_entirely_global_costmap"/>
-          <BackUp backup_dist="0.25" backup_speed="0.10" name="GlobalBackup"/>
+          <BackUp backup_dist="0.25" backup_speed="0.20" name="GlobalBackup"/>
           <Wait wait_duration="1.0" name="GlobalWait"/>
         </Sequence>
       </Fallback>

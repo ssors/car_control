@@ -116,13 +116,13 @@ source install/setup.bash
 ### 1. 启动建图 (SLAM)(直接启动这一个就可以，设置的是gazebo无图模式，只显示rviz2)
 
 ```bash
-ros2 launch car_control mapping.launch
+ros2 launch car_control mapping.launch.py
 
 ```
 ### 2. 启动全屋巡检 (设置的是gazebo无图模式，只显示rviz2)
 
 ```bash
-ros2 launch car_control navigation.launch 
+ros2 launch car_control navigation.launch.py
 ros2 run car_control coverage_navigator 
 
 ```

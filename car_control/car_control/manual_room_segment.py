@@ -71,7 +71,7 @@ def pick_room_seeds(free_mask):
     cv2.namedWindow(window_name)
     cv2.setMouseCallback(window_name, mouse_callback)
 
-    print('请依次在每个房间内部点一下(顺序不重要)，点完按 q 结束')
+    print('请依次在每个房间内部点一下，点完按 q 结束')
     while True:
         temp = display_img.copy()
         for i, (x, y) in enumerate(clicked_points):
@@ -106,7 +106,7 @@ def watershed_segment_rooms(free_mask, seed_points):
 def main():
     # ===== 参数配置，和主脚本保持一致 =====
     MAP_YAML_PATH = '/home/susu/ros2/ros2_ws/src/ros2_maps/room_latest.yaml'
-    SAFETY_MARGIN_M = 0.32
+    SAFETY_MARGIN_M = 0.35
     OUTPUT_DIR = '/home/susu/ros2/ros2_ws/src/car_control/coverage_output'
     # ======================================
 

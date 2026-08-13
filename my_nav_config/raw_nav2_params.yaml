@@ -117,7 +117,7 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: True
-    controller_frequency: 30.0
+    controller_frequency: 15.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
@@ -152,7 +152,7 @@ controller_server:
       use_velocity_scaled_lookahead_dist: true
       
       # ===== 阿克曼核心约束（匹配你的车）=====
-      min_turning_radius: 0.32      # ← 根据轴距计算得出
+      min_turning_radius: 0.30      # ← 根据轴距计算得出
       use_rotate_to_heading: false
       allow_reversing: true
       
@@ -222,8 +222,8 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 4.0
+      update_frequency: 1.0
+      publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_footprint
       use_sim_time: True
@@ -263,20 +263,20 @@ map_saver:
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 3.0
+    expected_planner_frequency: 1.0
     use_sim_time: True
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_smac_planner/SmacPlannerHybrid"
       downsample_costmap: false
-      reverse_penalty: 1.0   # 倒车惩罚
-      change_penalty: 1.5 # 转弯惩罚
-      non_straight_penalty: 1.5  # 不直行惩罚
+      reverse_penalty: 1.5   # 倒车惩罚
+      change_penalty: 1.0 # 转弯惩罚
+      non_straight_penalty: 1.4  # 不直行惩罚
       cost_penalty: 1.8  # 障碍物惩罚
       tolerance: 0.2
       use_astar: false
       allow_unknown: true
-      minimum_turning_radius: 0.32
+      minimum_turning_radius: 0.30
       angle_quantization_bins: 128
 
 smoother_server:

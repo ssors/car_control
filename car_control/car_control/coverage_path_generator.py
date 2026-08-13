@@ -166,7 +166,7 @@ def main():
     # ===== 参数配置 =====
     MAP_YAML_PATH = '/home/susu/ros2/ros2_ws/src/ros2_maps/room_latest.yaml'
     ROW_SPACING_M = 0.5
-    SAFETY_MARGIN_M = 0.32          # 唯一的安全边距来源，不再叠加二次过滤
+    SAFETY_MARGIN_M = 0.35         # 唯一的安全边距来源，不再叠加二次过滤
     OUTPUT_DIR = '/home/susu/ros2/ros2_ws/src/car_control/coverage_output'
     # ====================
 
