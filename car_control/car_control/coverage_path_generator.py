@@ -65,8 +65,8 @@ def find_row_segments(row_pixels):
     if len(row_pixels) == 0:
         return []
     segments = []
-    start = row_pixels[0]
-    prev = row_pixels[0]
+    start = row_pixels[0] # 记录当前线段的起始位置
+    prev = row_pixels[0]  # 记录上一个访问过的像素，来判断当前像素是否和上一个连续
     for x in row_pixels[1:]:
         if x - prev > 1:
             segments.append((start, prev))
@@ -78,9 +78,9 @@ def find_row_segments(row_pixels):
 
 def generate_room_coverage(room_mask, row_spacing_px, min_segment_len_px=3):
     """给单个房间生成弓字形覆盖路径（像素坐标）"""
-    h, w = room_mask.shape
-    waypoints_px = []
-    rows = list(range(0, h, row_spacing_px))
+    h, w = room_mask.shape  # 房间掩码的高度和宽度
+    waypoints_px = []  # 存储房间所有路径点
+    rows = list(range(0, h, row_spacing_px)) # 从第0行开始，每隔row__px行取一条水平线
 
     for i, row in enumerate(rows):
         row_pixels = np.where(room_mask[row, :] > 0)[0]
@@ -91,28 +91,28 @@ def generate_room_coverage(room_mask, row_spacing_px, min_segment_len_px=3):
 
         segments = sorted(segments, key=lambda s: s[0])
         if i % 2 == 1:
-            segments = segments[::-1]
+            segments = segments[::-1]  # 偶数行从左到右走，奇数行从右到左走（弓字形路径的核心）
 
         for left, right in segments:
             if i % 2 == 0:
-                waypoints_px.append((left, row))
+                waypoints_px.append((left, row))   # 偶数行，先添加左端点
                 waypoints_px.append((right, row))
             else:
                 waypoints_px.append((right, row))
                 waypoints_px.append((left, row))
 
-    return waypoints_px
+    return waypoints_px # 返回该房间的所有路径点
 
 
-def get_room_centroid(room_mask):
-    ys, xs = np.where(room_mask > 0)
+def get_room_centroid(room_mask):  # 计算房间质心
+    ys, xs = np.where(room_mask > 0)  # 返回所有属于该房间的像素坐标（行号，列号）
     return xs.mean(), ys.mean()
 
 
 def order_rooms_by_nearest_neighbor(room_masks, start_px):
     """贪心最近邻排序，减少房间间来回穿梭"""
     remaining = list(range(len(room_masks)))
-    ordered = []
+    ordered = []  # 存储排序后房间访问顺序
     current_pos = start_px
 
     while remaining:
@@ -126,13 +126,13 @@ def order_rooms_by_nearest_neighbor(room_masks, start_px):
     return ordered
 
 
-def pixel_to_world(px, py, resolution, origin, img_height):
+def pixel_to_world(px, py, resolution, origin, img_height):  # 像素转世界坐标
     wx = origin[0] + px * resolution
     wy = origin[1] + (img_height - py) * resolution
     return wx, wy
 
 
-def visualize_result(img, free_mask, room_labels, num_rooms, waypoints_px, save_path):
+def visualize_result(img, free_mask, room_labels, num_rooms, waypoints_px, save_path): # 可视化
     """三联图：原始地图 / 房间分割结果 / 最终覆盖路径"""
     fig, axes = plt.subplots(1, 3, figsize=(20, 7))
 
@@ -165,7 +165,7 @@ def visualize_result(img, free_mask, room_labels, num_rooms, waypoints_px, save_
 def main():
     # ===== 参数配置 =====
     MAP_YAML_PATH = '/home/susu/ros2/ros2_ws/src/ros2_maps/room_latest.yaml'
-    ROW_SPACING_M = 0.5
+    ROW_SPACING_M = 0.5   # 行间距0.5米，每0.5米走一条水平线
     SAFETY_MARGIN_M = 0.35         # 唯一的安全边距来源，不再叠加二次过滤
     OUTPUT_DIR = '/home/susu/ros2/ros2_ws/src/car_control/coverage_output'
     # ====================

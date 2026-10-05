@@ -40,6 +40,7 @@ setup(
             # 'door_margin_scan = car_control.door_margin_scan:main',
             'manual_room_segment = car_control.manual_room_segment:main',
             'unstuck_helper = car_control.unstuck_helper:main',
+            'serial_bridge = car_control.serial_bridge:main',
             
         ],
     },

@@ -11,23 +11,23 @@ import yaml
 import math
 import os
 import time
-from geometry_msgs.msg import PoseStamped, Twist, PoseWithCovarianceStamped
-from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
-from nav2_msgs.srv import ClearEntireCostmap
+from geometry_msgs.msg import PoseStamped, Twist, PoseWithCovarianceStamped # 给Nav2发目标点、速度指令、订阅AMCL定位
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult  # Nav2的python封装、导航结果
+from nav2_msgs.srv import ClearEntireCostmap   # 清空代价地图服务
 
 
-def make_pose(navigator, x, y, yaw):
+def make_pose(navigator, x, y, yaw):  # 生成导航目标点
     pose = PoseStamped()
     pose.header.frame_id = 'map'
-    pose.header.stamp = navigator.get_clock().now().to_msg()
+    pose.header.stamp = navigator.get_clock().now().to_msg()  # 获取当期Ros时间戳
     pose.pose.position.x = x
     pose.pose.position.y = y
-    pose.pose.orientation.z = math.sin(yaw / 2.0)
+    pose.pose.orientation.z = math.sin(yaw / 2.0)  # 转成四元数
     pose.pose.orientation.w = math.cos(yaw / 2.0)
     return pose
 
 
-def compute_arrival_yaws(raw_points):
+def compute_arrival_yaws(raw_points): # 计算每个点的朝向
     yaws = []
     for i in range(len(raw_points)):
         if i == 0:
@@ -48,7 +48,7 @@ def compute_arrival_yaws(raw_points):
     return yaws
 
 
-class PositionTracker:
+class PositionTracker:  # 卡死检测助手
     """独立追踪车的真实AMCL位置，用于判断"是否真的没在移动"，
     而不是只看waypoint编号有没有切换"""
 
@@ -64,7 +64,7 @@ class PositionTracker:
         return self.current_pos
 
 
-def force_backup_and_clear(navigator, cmd_vel_pub, clear_local_client, clear_global_client):
+def force_backup_and_clear(navigator, cmd_vel_pub, clear_local_client, clear_global_client):  # 脱困流程
     print('⚠️ 检测到疑似卡死，开始脱困流程')
 
     navigator.cancelTask()
@@ -102,15 +102,15 @@ def force_backup_and_clear(navigator, cmd_vel_pub, clear_local_client, clear_glo
         clear_global_client.call_async(ClearEntireCostmap.Request())
     print('已清空costmap，脱困流程完成，控制权交还Nav2')
 
-
+  # 核心巡检逻辑
 def navigate_with_stuck_detection(navigator, poses, cmd_vel_pub,
                                     clear_local_client, clear_global_client,
                                     pos_tracker,
                                     stuck_timeout_sec=15.0,
                                     stuck_move_threshold_m=0.15,
                                     max_recovery_attempts=3):
-    total = len(poses)
-    i = 0
+    total = len(poses)  # 总路径点数
+    i = 0  # 当前正在处理的路径点索引
     failed_waypoints = []
 
     while i < total:
@@ -119,8 +119,8 @@ def navigate_with_stuck_detection(navigator, poses, cmd_vel_pub,
 
         last_feedback_waypoint = -1
         last_progress_time = time.time()
-        last_check_pos = pos_tracker.get_pos()
-        recovery_attempts = 0
+        last_check_pos = pos_tracker.get_pos()  # 上次检查时的AMCL位置
+        recovery_attempts = 0   # 当前目标点的脱困尝试次数
         is_fresh_batch = True   # 标记这是不是刚重新发起的一批，第一次反馈不算"真正推进"
 
         while not navigator.isTaskComplete():

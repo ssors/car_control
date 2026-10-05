@@ -8,6 +8,6 @@ explore_node:
     progress_timeout: 30.0
     potential_scale: 5.0
     orientation_scale: 0.0
-    gain_scale: 0.5
+    gain_scale: 0.5   
     transform_tolerance: 0.3
     min_frontier_size: 0.17

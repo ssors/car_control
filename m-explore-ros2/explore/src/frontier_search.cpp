@@ -24,7 +24,7 @@ FrontierSearch::FrontierSearch(nav2_costmap_2d::Costmap2D* costmap,
 }
 
 std::vector<Frontier>
-FrontierSearch::searchFrom(geometry_msgs::msg::Point position)
+FrontierSearch::searchFrom(geometry_msgs::msg::Point position)  // 从机器人当前位置开始，把整个地图扫一遍，找出所有边界点，打包成一个列表返回
 {
   std::vector<Frontier> frontier_list;
 
@@ -97,7 +97,7 @@ FrontierSearch::searchFrom(geometry_msgs::msg::Point position)
 
 Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
                                           unsigned int reference,
-                                          std::vector<bool>& frontier_flag)
+                                          std::vector<bool>& frontier_flag)   // 把连通的边界聚成一团，算出簇的重心、大小和离机器人最近的距离
 {
   // initialize frontier structure
   Frontier output;
@@ -129,7 +129,7 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
     for (unsigned int nbr : nhood8(idx, *costmap_)) {
       // check if neighbour is a potential frontier cell
       if (isNewFrontierCell(nbr, frontier_flag)) {
-        // mark cell as frontier
+        // mark cell as frontier   判断是不是边界格子，如果一个格子是未知区域（灰色）并且上下左右至少有有空地（白色），就是边界格子
         frontier_flag[nbr] = true;
         unsigned int mx, my;
         double wx, wy;
@@ -189,7 +189,7 @@ bool FrontierSearch::isNewFrontierCell(unsigned int idx,
   return false;
 }
 
-double FrontierSearch::frontierCost(const Frontier& frontier)
+double FrontierSearch::frontierCost(const Frontier& frontier)   // 给边界打分
 {
   return (potential_scale_ * frontier.min_distance *
           costmap_->getResolution()) -

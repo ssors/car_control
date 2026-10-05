@@ -3,10 +3,10 @@ manual_room_segmentation.py
 手动指定房间种子点 + 分水岭算法，精确分割出你想要的房间数量
 """
 import os
-import cv2
-import numpy as np
-import yaml
-import matplotlib.pyplot as plt
+import cv2   # 图像处理
+import numpy as np   # 数组运算
+import yaml # 读取地图的yaml文件
+import matplotlib.pyplot as plt  # 绘图显示结果
 
 
 def load_map(map_yaml_path):
@@ -22,7 +22,7 @@ def load_map(map_yaml_path):
         raise FileNotFoundError(f"找不到地图图片: {image_path}")
     resolution = map_meta['resolution']
     origin = map_meta['origin']
-    return img, resolution, origin, map_meta
+    return img, resolution, origin, map_meta   # 图片本身、分辨率、原点坐标和yaml完整内容
 
 
 def extract_freespace(img, safety_margin_m, resolution, map_meta=None):
@@ -31,7 +31,7 @@ def extract_freespace(img, safety_margin_m, resolution, map_meta=None):
     if map_meta is not None:
         free_thresh = map_meta.get('free_thresh', 0.196)
         negate = map_meta.get('negate', 0)
-        if negate == 0:
+        if negate == 0:  # 灰度大于205是自由空间
             free_val_thresh = 255 * (1.0 - free_thresh)
             free_mask = (img >= free_val_thresh).astype(np.uint8) * 255
         else:
@@ -44,12 +44,12 @@ def extract_freespace(img, safety_margin_m, resolution, map_meta=None):
     unknown_mask = (img >= 195) & (img <= 215)
     free_mask[unknown_mask] = 0
 
-    kernel_open = np.ones((3, 3), np.uint8)
+    kernel_open = np.ones((3, 3), np.uint8)  # 3×3的核做一次开运算，作用是去掉地图边缘的零星噪点
     free_mask = cv2.morphologyEx(free_mask, cv2.MORPH_OPEN, kernel_open)
 
     erode_pixels = max(1, int(safety_margin_m / resolution))
     erode_kernel = np.ones((3, 3), np.uint8)
-    free_mask = cv2.erode(free_mask, erode_kernel, iterations=erode_pixels)
+    free_mask = cv2.erode(free_mask, erode_kernel, iterations=erode_pixels) # 把安全边距换算成像素数，然后对自由空间做腐蚀
 
     return free_mask
 
@@ -66,14 +66,14 @@ def mouse_callback(event, x, y, flags, param):
 
 def pick_room_seeds(free_mask):
     """弹出交互窗口，让你依次点击每个房间内部一点作为种子"""
-    display_img = cv2.cvtColor(free_mask, cv2.COLOR_GRAY2BGR)
+    display_img = cv2.cvtColor(free_mask, cv2.COLOR_GRAY2BGR)  # 二值掩码转成彩色图，
     window_name = 'Click each room center, press q when done'
     cv2.namedWindow(window_name)
-    cv2.setMouseCallback(window_name, mouse_callback)
+    cv2.setMouseCallback(window_name, mouse_callback)  # 创建opencv窗口
 
     print('请依次在每个房间内部点一下，点完按 q 结束')
     while True:
-        temp = display_img.copy()
+        temp = display_img.copy()  # 副本
         for i, (x, y) in enumerate(clicked_points):
             cv2.circle(temp, (x, y), 4, (0, 0, 255), -1)
             cv2.putText(temp, str(i + 1), (x + 6, y),
@@ -88,25 +88,25 @@ def pick_room_seeds(free_mask):
 def watershed_segment_rooms(free_mask, seed_points):
     """用分水岭算法，以手动种子点为起点，在free_mask范围内扩展出精确房间边界"""
     h, w = free_mask.shape
-    color_img = cv2.cvtColor(free_mask, cv2.COLOR_GRAY2BGR)
+    color_img = cv2.cvtColor(free_mask, cv2.COLOR_GRAY2BGR) 
 
-    markers = np.zeros((h, w), dtype=np.int32)
+    markers = np.zeros((h, w), dtype=np.int32)  # 分水岭算法的种子标记图，0表示未标记，1到N表示属于第几个种子点
     for i, (x, y) in enumerate(seed_points, start=1):
-        cv2.circle(markers, (x, y), 3, i, -1)
+        cv2.circle(markers, (x, y), 3, i, -1)    # 给分水岭算法提供种子标记
 
-    cv2.watershed(color_img, markers)
+    cv2.watershed(color_img, markers)  # 输入地形图和种子标记图
 
     # watershed结果：-1是边界线，0是未处理，1..N是各房间标签
     markers[free_mask == 0] = 0   # 障碍物区域不算房间
     markers[markers < 0] = 0      # 边界线也不算房间本体
 
-    return markers
+    return markers # 返回markers矩阵
 
 
 def main():
     # ===== 参数配置，和主脚本保持一致 =====
     MAP_YAML_PATH = '/home/susu/ros2/ros2_ws/src/ros2_maps/room_latest.yaml'
-    SAFETY_MARGIN_M = 0.35
+    SAFETY_MARGIN_M = 0.35  # 安全边距，所有路径至少离开墙35厘米
     OUTPUT_DIR = '/home/susu/ros2/ros2_ws/src/car_control/coverage_output'
     # ======================================
 
@@ -115,7 +115,7 @@ def main():
     img, resolution, origin, map_meta = load_map(MAP_YAML_PATH)
     print(f'地图尺寸: {img.shape}, 分辨率: {resolution} m/px')
 
-    free_mask = extract_freespace(img, SAFETY_MARGIN_M, resolution, map_meta)
+    free_mask = extract_freespace(img, SAFETY_MARGIN_M, resolution, map_meta)  # 白色可通行，黑色障碍物
 
     seeds = pick_room_seeds(free_mask)
     if len(seeds) < 2:
